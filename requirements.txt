@@ -1,0 +1,11 @@
+opencv-python
+numpy
+insightface
+onnxruntime
+langgraph
+langchain
+langchain-groq
+langchain-core
+faster-whisper
+SpeechRecognition 
+pyaudio
