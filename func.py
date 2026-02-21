@@ -17,15 +17,15 @@ import threading
 import pyttsx3
 import io
 from pydantic import BaseModel,Field
+import time
 
 load_dotenv(override=True)
 keys=os.getenv("groq_key")
 groq_key=[ i.strip()  for i in keys.split(",") ]
-URI=""
-AUTH=""
-#  trying to understand the archtiecture a bit , i need to use threads to be able to input multiple inputs(audio,visual)  one thread for the brain
-#  for the brain which will be created using langgraph ( dont understand how to make it agentic or should use a complex workflow for brian )
-# then one thread always for the output and the output needs to be controlled cant overwhelm the patent at any given moment
+URI=os.getenv("URI")
+db=os.getenv("Database")
+pwd=os.getenv("pwd")
+AUTH=(db,pwd)
 
 
 app = FaceAnalysis(name='buffalo_s', providers=['CPUExecutionProvider'])
@@ -44,11 +44,17 @@ visual_output=queue.Queue(maxsize=1)
 audio_output=queue.Queue(maxsize=3)
 current_key=0
 llm=ChatGroq(model="llama-3.3-70b-versatile",api_key=groq_key[current_key])
-patient_name="Johnny"
+patient_name="Harry"
 transcription=""
 
 
-
+try:
+    global_known_faces = pickle.load(open('temp_faces.pkl', 'rb'))
+except (EOFError, FileNotFoundError):
+    global_known_faces = []
+current_display_frame = None
+current_display_name = "Scanning..."
+current_display_box = None
 
 
 #function for my thread 1 , that will constantly take visual input
@@ -84,7 +90,6 @@ def input_audio():
                     pass
             audio_input.put(raw_wav_bytes)
 
-# now this is where im pondering a bit cause this function i dont knwo where it should be part of my brain or it will intiaalize the langgraph 
 def process_visual():
     while running:
         try:
@@ -101,6 +106,7 @@ def process_visual():
                 pass
         
         visual_output.put((frame,faces))
+        time.sleep(0.3)
 
 def process_audio():
     global transcription
@@ -134,24 +140,33 @@ class Alzheimer(TypedDict):
 
 def recognize(state:Alzheimer):
     name=""
-    global embedding
+    global embedding, current_display_name, current_display_box, current_display_frame
     try:
         frame,faces=visual_output.get(timeout=0.6)
+        current_display_frame = frame.copy()
     except queue.Empty:
+        current_display_name = "Scanning..."
+        current_display_box = None
         return {'name':""}
     if len(faces)==0:
+        current_display_name = "No faces detected"
+        current_display_box = None
         return {'name':""}
     embedding = faces[0].normed_embedding
-    loaded=pickle.load(open('temp_faces.pkl','rb'))
-    for i in loaded:
+    current_display_box = faces[0].bbox.astype(int)
+    # loaded=pickle.load(open('temp_faces.pkl','rb'))
+    #for i in loaded:
+    for i in global_known_faces:
         to_match=i['embeddings']
         if np.dot(embedding,to_match)>0.50:
             name=i['name']
+            current_display_name = name
             return {'name':name}
     return {'name':"Unknown"}
 
 ## atill have to work on handling llm calling and return factor in this function
 def identification(state:Alzheimer):
+    global current_key, llm
     try:
         res=llm.invoke(f'''Identify the name of the person from the following conversation if name not found give a random 12 digitnumber and only number **DO NOT RETURN THE PATIENT NAME{patient_name}**  
                    **RETURN ONLY THE NAME , NO EXTRA INFORMATION**
@@ -159,11 +174,14 @@ def identification(state:Alzheimer):
                    {transcription}
                    ''').content
     except RateLimitError:
-        current_key+=1
+        
+        current_key = (current_key + 1) % len(groq_key) 
+        llm = ChatGroq(model="llama-3.3-70b-versatile", api_key=groq_key[current_key])
         return{'name':"failed"}
     dr={'name':res,'embeddings':embedding}
-    with open('temp_faces.pkl', 'ab') as file:
-        pickle.dump(dr, file)
+    global_known_faces.append(dr)
+    with open('temp_faces.pkl', 'wb') as file:
+        pickle.dump(global_known_faces, file)
     return {'name':res}
 
 # should i make it a tol for the llm to use
@@ -171,10 +189,10 @@ def getraginfo(state:Alzheimer):
     name=state["name"]
     relation=""
     last_convo=""
-    live_convo=""
+    #live_convo=""
     try:# will check if person is already in rag or not
         with GraphDatabase.driver(URI, auth=AUTH) as driver:
-            records,summary,key=driver.execute_query("MATCH (n:Person[{name:$name1}])-[r:KNOWS]->(m:Person{name:$name2}) RETURN n,r,m",name1=patient_name,name2=name,database_="neo4j")
+            records,summary,key=driver.execute_query("MATCH (n:Person{name:$name1})-[r:KNOWS]->(m:Person{name:$name2}) RETURN n,r,m",name1=patient_name,name2=name,database_="neo4j")
         for record in records:
             x=record.data()
             source=x.get("m")
@@ -186,6 +204,7 @@ def getraginfo(state:Alzheimer):
     return {'relation':'','last_convo':''}
 #this is gonna be the  most important function so the quality of this function should be aas good as it can be
 def live_help(state:Alzheimer):
+    global current_key, llm,transcription
     status_check_prompt=f'''You are an expert medical assistant for alzheimer patients , 
     look at the conversation and return yes or no if you think the patient needs help of not {transcription}'''
     try:
@@ -219,10 +238,13 @@ def live_help(state:Alzheimer):
                     pass
             audio_output.put(res)
     except RateLimitError:
-        current_key+=1
+        
+        current_key = (current_key + 1) % len(groq_key) 
+        llm = ChatGroq(model="llama-3.3-70b-versatile", api_key=groq_key[current_key])
     return
 
 def creategraphinfo(state:Alzheimer):
+    global transcription,current_key, llm
     name=state["name"]
     last_convo=""
     relation=""
@@ -231,11 +253,31 @@ def creategraphinfo(state:Alzheimer):
         res=structured_llm.invoke(f"You are an expert relation analyzer , analyze the relation from the transcript and before that summarize the convo Transcript:{transcription}")
         last_convo=res.last_convo
         relation=res.relations
-    except Exception as e:
-        pass
+    except RateLimitError:
+        current_key = (current_key + 1) % len(groq_key) 
+        llm = ChatGroq(model="llama-3.3-70b-versatile", api_key=groq_key[current_key])
     query='''
-Create
-'''
+        MERGE (e:Person{name:$name1})
+
+        MERGE (f:Person{name:$name2})
+        ON CREATE
+        SET f.relation=$relation,
+            f.last_convo=$last_convo
+
+        MERGE (e)-[r:KNOWS]->(f)
+        '''
+    with GraphDatabase.driver(URI, auth=AUTH) as driver:
+        try:
+            driver.execute_query(
+                query,
+                name1=patient_name,
+                name2=name,
+                relation=relation,
+                last_convo=last_convo,
+                database_="neo4j"
+            )
+        except Exception as e:
+            pass
 
 
 
@@ -251,11 +293,92 @@ def output_audio():
 def condition_check_recognize(state:Alzheimer):
     name=state['name']
     if name =="":
-        return recognize
-    if name== "Unknown":
-        return identification
+        return END
+    elif name== "Unknown":
+        return "identification"
+    else:
+        return "getraginfo"
 
+def route_after_identification(state: Alzheimer):
+    name = state.get("name", "")
+    if name == "failed" or name == "":
+        return END 
+    return "getraginfo"
+def route_after_help(state: Alzheimer):
+    global transcription
+    if len(transcription) > 300: 
+        return "creategraphinfo"
+    return END
+
+
+workflow = StateGraph(Alzheimer)
+
+workflow.add_node("recognize", recognize)
+workflow.add_node("identification", identification)
+workflow.add_node("getraginfo", getraginfo)
+workflow.add_node("live_help", live_help)
+workflow.add_node("creategraphinfo", creategraphinfo)
+
+workflow.add_edge(START, "recognize")
+workflow.add_conditional_edges("recognize", condition_check_recognize)
+workflow.add_conditional_edges("identification", route_after_identification)
+workflow.add_edge("creategraphinfo", END)
+workflow.add_edge("getraginfo", "live_help")
+workflow.add_conditional_edges("live_help", route_after_help)
+
+
+if __name__ == "__main__":
     
+    brain = workflow.compile()
+
+    print("[SYSTEM] Starting sensory threads...")
+    threads = [
+        threading.Thread(target=input_visual, daemon=True),
+        threading.Thread(target=input_audio, daemon=True),
+        threading.Thread(target=process_visual, daemon=True),
+        threading.Thread(target=process_audio, daemon=True),
+        threading.Thread(target=output_audio, daemon=True)
+    ]
+    for t in threads:
+        t.start()
+
+    print("[SYSTEM] Brain online. Starting UI and Main Loop...")
+    
+    last_known_name = ""
+
+    try:
+        while running:
+            result = brain.invoke({"name": "", "relation": "", "last_convo": ""})
+            
+            if result and result.get("name") not in ["", "Unknown", "failed"]:
+                last_known_name = result["name"]
+
+            if current_display_frame is not None:
+                display_img = current_display_frame.copy()
+                
+                if current_display_box is not None:
+                    x1, y1, x2, y2 = current_display_box
+                    cv.rectangle(display_img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                    
+                    cv.rectangle(display_img, (x1, y1-35), (x2, y1), (0, 255, 0), cv.FILLED)
+                    cv.putText(display_img, current_display_name, (x1+5, y1-10), 
+                               cv.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 0), 2)
+
+                cv.imshow("Alzheimer's Assistant POV", display_img)
+            if cv.waitKey(1) & 0xFF == ord('q'):
+                break
 
 
 
+    except KeyboardInterrupt:
+        print("\n[SYSTEM] Manual interruption.")
+        
+    finally:
+        print("[SYSTEM] Shutting down...")
+        running = False
+        cv.destroyAllWindows()
+        if last_known_name != "" and len(transcription) > 50:
+            print(f"[SYSTEM] Saving final memory of {last_known_name} to Neo4j...")
+            creategraphinfo({"name": last_known_name})
+            
+        print("[SYSTEM] Goodbye.")
