@@ -14,6 +14,9 @@ from groq import RateLimitError
 from neo4j import GraphDatabase
 from dotenv import load_dotenv
 import threading
+import pyttsx3
+import io
+from pydantic import BaseModel,Field
 
 load_dotenv(override=True)
 keys=os.getenv("groq_key")
@@ -28,6 +31,12 @@ AUTH=""
 app = FaceAnalysis(name='buffalo_s', providers=['CPUExecutionProvider'])
 app.prepare(ctx_id=0, det_size=(640, 640))
 model = WhisperModel("tiny.en", device="cpu", compute_type="int8")
+engine = pyttsx3.init('sapi5')
+engine.setProperty('rate', 160) 
+engine.setProperty('volume', 1.0)
+voices = engine.getProperty('voices')
+if len(voices) > 1:
+    engine.setProperty('voice', voices[1].id)
 running=True
 visual_input=queue.Queue(maxsize=1)
 audio_input=queue.Queue(maxsize=3)
@@ -37,6 +46,10 @@ current_key=0
 llm=ChatGroq(model="llama-3.3-70b-versatile",api_key=groq_key[current_key])
 patient_name="Johnny"
 transcription=""
+
+
+
+
 
 #function for my thread 1 , that will constantly take visual input
 def input_visual():
@@ -61,14 +74,15 @@ def input_audio():
         with mic as source:
             r.adjust_for_ambient_noise(source,duration=0.5)
             audio=r.listen(source,phrase_time_limit=15)
-            with open("audio.wav",'wb') as f:
-                f.write(audio.get_wav_data())
+            # with open("audio.wav",'wb') as f:
+            #     f.write(audio.get_wav_data())
+            raw_wav_bytes = audio.get_wav_data()
             if audio_input.full():
                 try:
                     audio_input.get_nowait()
                 except queue.Empty:
                     pass
-            audio_input.put("audio.wav")
+            audio_input.put(raw_wav_bytes)
 
 # now this is where im pondering a bit cause this function i dont knwo where it should be part of my brain or it will intiaalize the langgraph 
 def process_visual():
@@ -93,12 +107,25 @@ def process_audio():
     while running:
         while not audio_input.empty():
             audio_item = audio_input.get()
-            segments, _ = model.transcribe(audio_item, beam_size=5)
+            audio_file_like = io.BytesIO(audio_item)
+            segments, _ = model.transcribe(audio_file_like, beam_size=5)
             for segment in segments:
                 transcription += segment.text + " "
             
-## lets see i think the brain will start from it here 
 
+class RelationsGraph(BaseModel):
+   last_convo: str = Field(
+        description='''
+            Summarize the transcript in about  1-2 line 
+            '''
+
+    )
+   relations: str=Field(
+       description='''
+            Study the transcript and determine the relation between the patient and person , if none is identified return unknown
+'''
+   )
+## lets see i think the brain will start from it here 
 class Alzheimer(TypedDict):
     name:str
     relation:str
@@ -107,6 +134,7 @@ class Alzheimer(TypedDict):
 
 def recognize(state:Alzheimer):
     name=""
+    global embedding
     try:
         frame,faces=visual_output.get(timeout=0.6)
     except queue.Empty:
@@ -124,12 +152,6 @@ def recognize(state:Alzheimer):
 
 ## atill have to work on handling llm calling and return factor in this function
 def identification(state:Alzheimer):
-    # transcription=""
-    # while not audio_input.empty():
-    #     audio_item = audio_input.get()
-    #     segments, _ = model.transcribe(audio_item, beam_size=5)
-    #     for segment in segments:
-    #         transcription += segment.text + " "
     try:
         res=llm.invoke(f'''Identify the name of the person from the following conversation if name not found give a random 12 digitnumber and only number **DO NOT RETURN THE PATIENT NAME{patient_name}**  
                    **RETURN ONLY THE NAME , NO EXTRA INFORMATION**
@@ -139,6 +161,9 @@ def identification(state:Alzheimer):
     except RateLimitError:
         current_key+=1
         return{'name':"failed"}
+    dr={'name':res,'embeddings':embedding}
+    with open('temp_faces.pkl', 'ab') as file:
+        pickle.dump(dr, file)
     return {'name':res}
 
 # should i make it a tol for the llm to use
@@ -166,7 +191,7 @@ def live_help(state:Alzheimer):
     try:
         res=llm.invoke(status_check_prompt).content
         if "no" in res.lower():
-            transcription=transcription[len(transcription)/2:]
+            transcription=transcription[int(len(transcription)/2):]
             return
         else:
             name = state.get("name", "")
@@ -187,13 +212,41 @@ def live_help(state:Alzheimer):
                             3. Gently remind {patient_name} who they are talking to and suggest a simple reply.
                             4. Speak directly to {patient_name} (e.g., "Johnny, this is your son Vihaan...")"""
             res = llm.invoke(system_prompt).content
-            audio_output.put()
+            if audio_output.full():
+                try:
+                    audio_output.get_nowait()
+                except queue.Empty:
+                    pass
+            audio_output.put(res)
     except RateLimitError:
         current_key+=1
     return
-        
-        
 
+def creategraphinfo(state:Alzheimer):
+    name=state["name"]
+    last_convo=""
+    relation=""
+    try:
+        structured_llm=llm.with_structured_output(RelationsGraph)
+        res=structured_llm.invoke(f"You are an expert relation analyzer , analyze the relation from the transcript and before that summarize the convo Transcript:{transcription}")
+        last_convo=res.last_convo
+        relation=res.relations
+    except Exception as e:
+        pass
+    query='''
+Create
+'''
+
+
+
+def output_audio():
+    while running:
+        try:
+            text=audio_output.get(timeout=0.6)
+        except queue.Empty:
+            continue
+        engine.say(text)
+        engine.runAndWait()
 
 def condition_check_recognize(state:Alzheimer):
     name=state['name']
