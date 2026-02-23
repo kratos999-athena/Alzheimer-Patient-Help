@@ -9,3 +9,5 @@ langchain-core
 faster-whisper
 SpeechRecognition 
 pyaudio
+neo4j
+python-dotenv
