@@ -203,45 +203,65 @@ def getraginfo(state:Alzheimer):
         pass
     return {'relation':'','last_convo':''}
 #this is gonna be the  most important function so the quality of this function should be aas good as it can be
-def live_help(state:Alzheimer):
-    global current_key, llm,transcription
-    status_check_prompt=f'''You are an expert medical assistant for alzheimer patients , 
-    look at the conversation and return yes or no if you think the patient needs help of not {transcription}'''
+def live_help(state: Alzheimer) -> dict:
+    with transcription_lock:
+        snapshot = transcription
+
+    if not snapshot.strip():
+        return {}
+
+    status_prompt = (
+        "You are an expert medical assistant for Alzheimer's patients.\n"
+        "Does the following transcript suggest the patient needs conversational assistance?\n"
+        "Reply ONLY with 'yes' or 'no'.\n\n"
+        f"Transcript:\n{snapshot}"
+    )
     try:
-        res=llm.invoke(status_check_prompt).content
-        if "no" in res.lower():
-            transcription=transcription[int(len(transcription)/2):]
-            return
-        else:
-            name = state.get("name", "")
-            relation = state.get("relation", "")
-            last_convo = state.get("last_convo", "")
-            system_prompt = f"""You are an invisible cognitive assistant for an Alzheimer's patient named {patient_name}.
-                            Your job is to provide short, comforting whispers in their ear to help them navigate social situations.
-                            
-                            CURRENT CONTEXT:
-                            - Person in front of them: {name if name and name != 'Unknown' else 'An unrecognized person'}
-                            - Relation to patient: {relation if relation else 'Unknown'}
-                            - Memory of last conversation: {last_convo if last_convo else 'No previous memory context available.'}
-                            - What the person just said: "{transcription}"
-                            
-                            INSTRUCTIONS:
-                            1. KEEP IT EXTREMELY BRIEF (Max 1-2 short sentences).
-                            2. Do not overwhelm {patient_name}.
-                            3. Gently remind {patient_name} who they are talking to and suggest a simple reply.
-                            4. Speak directly to {patient_name} (e.g., "Johnny, this is your son Vihaan...")"""
-            res = llm.invoke(system_prompt).content
-            if audio_output.full():
-                try:
-                    audio_output.get_nowait()
-                except queue.Empty:
-                    pass
-            audio_output.put(res)
+        with llm_lock:
+            decision = llm.invoke(status_prompt).content.strip().lower()
+
+        if "no" in decision:
+            # Trim the older half to keep context window bounded
+            with transcription_lock:
+                global transcription
+                transcription = transcription[len(transcription) // 2:]
+            return {}
+
+        name      = state.get("name", "")
+        relation  = state.get("relation", "")
+        last_convo = state.get("last_convo", "")
+
+        system_prompt = (
+            f"You are an invisible cognitive assistant for an Alzheimer's patient named {patient_name}.\n"
+            f"Provide a short, comforting whisper to help them navigate social situations.\n\n"
+            f"CURRENT CONTEXT:\n"
+            f"- Person in front of them: {name if name and name != 'Unknown' else 'An unrecognized person'}\n"
+            f"- Relation to patient: {relation or 'Unknown'}\n"
+            f"- Memory of last conversation: {last_convo or 'No previous memory available.'}\n"
+            f"- What the person just said: \"{snapshot}\"\n\n"
+            f"INSTRUCTIONS:\n"
+            f"1. KEEP IT EXTREMELY BRIEF (1–2 short sentences max).\n"
+            f"2. Do not overwhelm {patient_name}.\n"
+            f"3. Gently remind {patient_name} who they are talking to and suggest a simple reply.\n"
+            f"4. Speak directly to {patient_name} (e.g., 'Harry, this is your son…')."
+        )
+        with llm_lock:
+            help_text = llm.invoke(system_prompt).content.strip()
+
+        if audio_output.full():
+            try:
+                audio_output.get_nowait()
+            except queue.Empty:
+                pass
+        audio_output.put(help_text)
+
     except RateLimitError:
-        
-        current_key = (current_key + 1) % len(groq_key) 
-        llm = ChatGroq(model="llama-3.3-70b-versatile", api_key=groq_key[current_key])
-    return
+        rotate_llm()
+    except Exception as exc:
+        log.error(f"live_help error: {exc}")
+
+    return {}
+
 
 def creategraphinfo(state:Alzheimer):
     global transcription,current_key, llm
