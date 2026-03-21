@@ -329,7 +329,46 @@ def route_after_help(state: Alzheimer):
     if len(transcription) > 300: 
         return "creategraphinfo"
     return END
+def _get_segment_embedding(
+    audio_f32: np.ndarray,
+    source_sr: int,
+    start_sec: float,
+    end_sec:   float,
+) -> Optional[np.ndarray]:
+    """
+    Extract a GE2E speaker embedding for the sub-segment [start_sec, end_sec].
 
+    Returns a 256-dim L2-normalised numpy array, or None if:
+      - The segment is shorter than MIN_SEGMENT_DURATION_SEC.
+      - resemblyzer's VAD trims away all voiced frames.
+      - Any other processing error occurs.
+
+    Called exclusively from process_audio (single thread) -- no lock needed.
+    """
+    duration = end_sec - start_sec
+    if duration < MIN_SEGMENT_DURATION_SEC:
+        return None
+
+    i_start = max(0, int(start_sec * source_sr))
+    i_end   = min(len(audio_f32), int(end_sec * source_sr))
+    chunk   = audio_f32[i_start:i_end]
+
+    min_samples = int(MIN_SEGMENT_DURATION_SEC * source_sr)
+    if len(chunk) < min_samples:
+        return None
+
+    try:
+        # preprocess_wav resamples to 16 kHz, normalises amplitude, and
+        # applies energy-based VAD to strip silence.
+        wav = preprocess_wav(chunk, source_sr=source_sr)
+        # resemblyzer needs at least ~0.16 s (2560 samples @ 16 kHz).
+        if len(wav) < 2560:
+            return None
+        embedding = _voice_encoder.embed_utterance(wav)  # (256,), L2-normed
+        return embedding
+    except Exception as exc:
+        log.debug(f"_get_segment_embedding: resemblyzer error -- {exc}")
+        return None
 
 workflow = StateGraph(Alzheimer)
 

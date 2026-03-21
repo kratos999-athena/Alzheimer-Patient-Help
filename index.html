@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="clinical">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MemoryCare · Cognitive Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+<style>
+/* ============================================================
+   DESIGN TOKENS — three themes via data-theme attribute
+   ============================================================ */
+
+/* ── Theme 1: Flowbite Clinical (Default) ──────────────────── */
+[data-theme="clinical"] {
+  --bg-page:       #f0f4f8;
+  --bg-card:       #ffffff;
+  --bg-card2:      #f8fafc;
+  --bg-header:     #ffffff;
+  --border:        #e2e8f0;
+  --border-focus:  #3b82f6;
+  --accent:        #2563eb;
+  --accent-soft:   #dbeafe;
+  --accent-text:   #1d4ed8;
+  --success:       #16a34a;
+  --success-soft:  #dcfce7;
+  --warning:       #d97706;
+  --warning-soft:  #fef3c7;
+  --danger:        #dc2626;
+  --danger-soft:   #fee2e2;
+  --text-primary:  #0f172a;
+  --text-secondary:#475569;
+  --text-muted:    #94a3b8;
+  --tag-bg:        #e0e7ff;
+  --tag-text:      #3730a3;
+  --shadow-sm:     0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:     0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+  --shadow-lg:     0 12px 32px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+  --radius:        14px;
+  --radius-sm:     8px;
+  --font-ui:       'DM Sans', sans-serif;
+  --font-mono:     'DM Mono', monospace;
+  --font-display:  'Sora', sans-serif;
+  --header-h:      64px;
+  --animate-bg:    none;
+  --video-border:  2px solid var(--border);
+  --card-backdrop: none;
+  --orb-opacity:   0;
+  --noise-opacity: 0;
+  --scan-display:  none;
+}
+
+/* ── Theme 2: Vision Pro Glassmorphism ─────────────────────── */
+[data-theme="glass"] {
+  --bg-page:       #060b18;
+  --bg-card:       rgba(255,255,255,0.07);
+  --bg-card2:      rgba(255,255,255,0.04);
+  --bg-header:     rgba(6,11,24,0.72);
+  --border:        rgba(255,255,255,0.12);
+  --border-focus:  rgba(99,210,255,0.6);
+  --accent:        #63d2ff;
+  --accent-soft:   rgba(99,210,255,0.15);
+  --accent-text:   #63d2ff;
+  --success:       #4ade80;
+  --success-soft:  rgba(74,222,128,0.15);
+  --warning:       #fbbf24;
+  --warning-soft:  rgba(251,191,36,0.15);
+  --danger:        #f87171;
+  --danger-soft:   rgba(248,113,113,0.15);
+  --text-primary:  #f0f6ff;
+  --text-secondary:#a8c4e0;
+  --text-muted:    rgba(168,196,224,0.5);
+  --tag-bg:        rgba(99,210,255,0.15);
+  --tag-text:      #63d2ff;
+  --shadow-sm:     0 2px 12px rgba(0,0,0,.4);
+  --shadow-md:     0 8px 32px rgba(0,0,0,.5);
+  --shadow-lg:     0 20px 60px rgba(0,0,0,.6);
+  --radius:        18px;
+  --radius-sm:     10px;
+  --font-ui:       'DM Sans', sans-serif;
+  --font-mono:     'DM Mono', monospace;
+  --font-display:  'Sora', sans-serif;
+  --header-h:      64px;
+  --video-border:  1.5px solid rgba(99,210,255,0.25);
+  --card-backdrop: blur(16px) saturate(180%);
+  --orb-opacity:   1;
+  --noise-opacity: 0.035;
+  --scan-display:  block;
+}
+
+/* ── Theme 3: Vercel / Stripe Minimalist ───────────────────── */
+[data-theme="minimal"] {
+  --bg-page:       #000000;
+  --bg-card:       #0a0a0a;
+  --bg-card2:      #111111;
+  --bg-header:     #000000;
+  --border:        #222222;
+  --border-focus:  #ffffff;
+  --accent:        #ffffff;
+  --accent-soft:   #1a1a1a;
+  --accent-text:   #ffffff;
+  --success:       #22c55e;
+  --success-soft:  #0f1f12;
+  --warning:       #eab308;
+  --warning-soft:  #1c1900;
+  --danger:        #ef4444;
+  --danger-soft:   #1c0606;
+  --text-primary:  #fafafa;
+  --text-secondary:#888888;
+  --text-muted:    #444444;
+  --tag-bg:        #1a1a1a;
+  --tag-text:      #888888;
+  --shadow-sm:     none;
+  --shadow-md:     none;
+  --shadow-lg:     none;
+  --radius:        4px;
+  --radius-sm:     2px;
+  --font-ui:       'DM Mono', monospace;
+  --font-mono:     'DM Mono', monospace;
+  --font-display:  'DM Mono', monospace;
+  --header-h:      56px;
+  --video-border:  1px solid #222222;
+  --card-backdrop: none;
+  --orb-opacity:   0;
+  --noise-opacity: 0;
+  --scan-display:  none;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+
+body {
+  font-family: var(--font-ui);
+  background: var(--bg-page);
+  color: var(--text-primary);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+/* ============================================================
+   ANIMATED BACKGROUND ELEMENTS
+   ============================================================ */
+
+/* Glass orbs */
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: var(--orb-opacity);
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+  z-index: 0;
+}
+.orb-1 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(99,210,255,0.18) 0%, transparent 70%);
+  top: -120px; left: -100px;
+  animation: orbFloat1 18s ease-in-out infinite;
+}
+.orb-2 {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(139,92,246,0.14) 0%, transparent 70%);
+  bottom: 10%; right: -80px;
+  animation: orbFloat2 22s ease-in-out infinite;
+}
+.orb-3 {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(52,211,153,0.10) 0%, transparent 70%);
+  top: 45%; left: 38%;
+  animation: orbFloat3 16s ease-in-out infinite;
+}
+
+@keyframes orbFloat1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(40px,30px) scale(1.08)} }
+@keyframes orbFloat2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-30px,-40px) scale(1.05)} }
+@keyframes orbFloat3 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(20px,-20px) scale(0.95)} }
+
+/* Noise overlay (glass only) */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  opacity: var(--noise-opacity);
+  pointer-events: none;
+  z-index: 1;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+
+/* Scan line (glass only) */
+.scan-line {
+  display: var(--scan-display);
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(99,210,255,0.4), transparent);
+  animation: scanDown 8s linear infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+@keyframes scanDown {
+  0%   { top: 0%; opacity: 0; }
+  5%   { opacity: 1; }
+  95%  { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--header-h);
+  background: var(--bg-header);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: var(--card-backdrop);
+  -webkit-backdrop-filter: var(--card-backdrop);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  z-index: 100;
+  transition: background 0.4s, border-color 0.4s;
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-mark {
+  width: 34px; height: 34px;
+  background: var(--accent);
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+[data-theme="glass"] .logo-mark {
+  background: linear-gradient(135deg, #63d2ff, #8b5cf6);
+  box-shadow: 0 0 20px rgba(99,210,255,0.3);
+}
+
+[data-theme="minimal"] .logo-mark {
+  background: #ffffff;
+  border-radius: 2px;
+}
+
+.logo-mark svg { width: 18px; height: 18px; }
+
+.logo-text {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.logo-sub {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Connection pill */
+.conn-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 100px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  background: var(--bg-card2);
+  transition: all 0.3s;
+}
+.conn-pill.connected { border-color: var(--success); background: var(--success-soft); color: var(--success); }
+.conn-pill.connecting { border-color: var(--warning); background: var(--warning-soft); color: var(--warning); }
+.conn-pill.disconnected { border-color: var(--danger); background: var(--danger-soft); color: var(--danger); }
+
+.conn-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.conn-pill.connected .conn-dot { animation: pulse-dot 2s ease-in-out infinite; }
+@keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(0.8)} }
+
+/* Theme switcher */
+.theme-switcher {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 100px;
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+}
+
+.theme-btn {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  transition: all 0.2s;
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.theme-btn:hover { background: var(--bg-card); color: var(--text-primary); }
+.theme-btn.active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+[data-theme="minimal"] .theme-btn.active { color: #000; }
+
+/* ============================================================
+   MAIN LAYOUT
+   ============================================================ */
+.main-wrapper {
+  padding-top: calc(var(--header-h) + 28px);
+  padding-bottom: 32px;
+  padding-left: 24px;
+  padding-right: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 10;
+}
+
+/* Responsive grid: video left (larger) | panels right (stacked) */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  grid-template-rows: auto auto;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .dashboard-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   CARD BASE
+   ============================================================ */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: var(--card-backdrop);
+  -webkit-backdrop-filter: var(--card-backdrop);
+  overflow: hidden;
+  transition: background 0.4s, border-color 0.4s, box-shadow 0.4s;
+  position: relative;
+}
+
+/* Glass card shimmer edge */
+[data-theme="glass"] .card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255,255,255,0.12);
+  pointer-events: none;
+}
+
+[data-theme="minimal"] .card {
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+[data-theme="minimal"] .card-title {
+  font-family: var(--font-mono);
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.card-badge {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 100px;
+  background: var(--tag-bg);
+  color: var(--tag-text);
+  font-weight: 500;
+}
+
+/* ============================================================
+   VIDEO CARD
+   ============================================================ */
+.video-card {
+  grid-row: 1 / 3;
+}
+
+.video-wrapper {
+  position: relative;
+  background: #000;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+}
+
+#video-feed {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border: var(--video-border);
+  border-radius: 0;
+  transition: opacity 0.3s;
+}
+
+/* Overlay gradient at bottom */
+.video-gradient {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 80px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.5));
+  pointer-events: none;
+}
+
+/* People chips row */
+.video-footer {
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.people-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 0.74rem;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  background: var(--bg-card2);
+  color: var(--text-secondary);
+  transition: all 0.2s;
+}
+
+.chip.known {
+  background: var(--success-soft);
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.chip.unknown {
+  background: var(--warning-soft);
+  border-color: var(--warning);
+  color: var(--warning);
+}
+
+.chip-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+.fps-badge {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+/* Offline placeholder */
+.video-offline {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: var(--bg-card2);
+}
+
+.offline-icon {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  display: grid;
+  place-items: center;
+  opacity: 0.5;
+}
+
+.offline-icon svg { width: 24px; height: 24px; stroke: var(--text-muted); fill: none; }
+.video-offline p { font-size: 0.82rem; color: var(--text-muted); }
+
+/* ============================================================
+   TRANSCRIPT CARD
+   ============================================================ */
+.transcript-scroll {
+  height: 320px;
+  overflow-y: auto;
+  padding: 16px 20px;
+  scroll-behavior: smooth;
+}
+
+.transcript-scroll::-webkit-scrollbar { width: 4px; }
+.transcript-scroll::-webkit-scrollbar-track { background: transparent; }
+.transcript-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.transcript-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 10px;
+  opacity: 0.4;
+}
+.transcript-empty svg { width: 28px; height: 28px; stroke: var(--text-muted); fill: none; }
+.transcript-empty span { font-size: 0.8rem; color: var(--text-muted); }
+
+/* Speaker turn block */
+.turn {
+  margin-bottom: 16px;
+  animation: fadeSlideIn 0.35s ease both;
+}
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.turn-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 5px;
+}
+
+.speaker-badge {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 100px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Auto-colour per speaker: A–H get distinct hues */
+.spk-A { background: #dbeafe; color: #1d4ed8; }
+.spk-B { background: #fce7f3; color: #be185d; }
+.spk-C { background: #dcfce7; color: #15803d; }
+.spk-D { background: #fef3c7; color: #92400e; }
+.spk-E { background: #f3e8ff; color: #7e22ce; }
+.spk-F { background: #cffafe; color: #0e7490; }
+.spk-G { background: #fee2e2; color: #991b1b; }
+.spk-H { background: #e0f2fe; color: #0369a1; }
+.spk-default { background: var(--tag-bg); color: var(--tag-text); }
+
+[data-theme="glass"] .spk-A { background: rgba(59,130,246,0.2); color: #93c5fd; }
+[data-theme="glass"] .spk-B { background: rgba(236,72,153,0.2); color: #f9a8d4; }
+[data-theme="glass"] .spk-C { background: rgba(34,197,94,0.2);  color: #86efac; }
+[data-theme="glass"] .spk-D { background: rgba(234,179,8,0.2);  color: #fde047; }
+[data-theme="glass"] .spk-E { background: rgba(168,85,247,0.2); color: #d8b4fe; }
+[data-theme="glass"] .spk-F { background: rgba(6,182,212,0.2);  color: #67e8f9; }
+[data-theme="glass"] .spk-G { background: rgba(239,68,68,0.2);  color: #fca5a5; }
+[data-theme="glass"] .spk-H { background: rgba(14,165,233,0.2); color: #7dd3fc; }
+
+[data-theme="minimal"] .spk-A,
+[data-theme="minimal"] .spk-B,
+[data-theme="minimal"] .spk-C,
+[data-theme="minimal"] .spk-D,
+[data-theme="minimal"] .spk-E,
+[data-theme="minimal"] .spk-F,
+[data-theme="minimal"] .spk-G,
+[data-theme="minimal"] .spk-H { background: #1a1a1a; color: #888888; }
+
+.turn-ts {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--text-muted);
+}
+
+.turn-text {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  padding-left: 2px;
+}
+
+[data-theme="minimal"] .turn-text {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+/* Typing cursor */
+.typing-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: var(--accent);
+  margin-left: 2px;
+  vertical-align: middle;
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ============================================================
+   CUE / NOTIFICATION CARD
+   ============================================================ */
+.cue-list {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.cue-list::-webkit-scrollbar { width: 4px; }
+.cue-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.cue-empty {
+  padding: 32px 20px;
+  text-align: center;
+  opacity: 0.4;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.cue-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  animation: cueEnter 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes cueEnter {
+  from { opacity:0; transform: scale(0.94) translateY(8px); }
+  to   { opacity:1; transform: scale(1) translateY(0); }
+}
+
+/* Accent left stripe */
+.cue-item::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--accent);
+  border-radius: 3px 0 0 3px;
+}
+
+[data-theme="glass"] .cue-item {
+  background: rgba(99,210,255,0.05);
+  border-color: rgba(99,210,255,0.15);
+}
+
+[data-theme="glass"] .cue-item::before { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+
+[data-theme="minimal"] .cue-item { border-color: #222; background: #0f0f0f; }
+[data-theme="minimal"] .cue-item::before { background: #ffffff; }
+
+.cue-icon {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.cue-icon svg { width: 16px; height: 16px; stroke: var(--accent); fill: none; }
+
+.cue-body { flex: 1; min-width: 0; }
+.cue-text {
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+[data-theme="minimal"] .cue-text { font-family: var(--font-mono); font-size: 0.78rem; }
+
+.cue-meta {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+/* New-cue flash pulse on card header */
+.card-header.cue-flash { animation: headerFlash 0.8s ease; }
+@keyframes headerFlash {
+  0%   { background: var(--bg-card); }
+  30%  { background: var(--accent-soft); }
+  100% { background: var(--bg-card); }
+}
+
+/* ============================================================
+   STATUS BAR
+   ============================================================ */
+.status-bar {
+  margin-top: 20px;
+  padding: 14px 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  backdrop-filter: var(--card-backdrop);
+  -webkit-backdrop-filter: var(--card-backdrop);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+[data-theme="minimal"] .stat-label { font-family: var(--font-mono); letter-spacing: 0.1em; }
+
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--text-primary);
+}
+
+.stat-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+}
+
+/* ============================================================
+   TOAST NOTIFICATION
+   ============================================================ */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast {
+  padding: 12px 18px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  max-width: 320px;
+  backdrop-filter: var(--card-backdrop);
+  pointer-events: all;
+  animation: toastIn 0.3s ease both;
+}
+.toast.fade-out { animation: toastOut 0.4s ease forwards; }
+
+@keyframes toastIn  { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)} }
+@keyframes toastOut { from{opacity:1;transform:translateX(0)} to{opacity:0;transform:translateX(40px)} }
+
+/* ============================================================
+   SCROLLBAR — global slim style
+   ============================================================ */
+* { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+
+/* ============================================================
+   RESPONSIVE TWEAKS
+   ============================================================ */
+@media (max-width: 700px) {
+  .main-wrapper { padding-left: 12px; padding-right: 12px; }
+  .header { padding: 0 16px; }
+  .theme-switcher { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Ambient background elements ──────────────────── -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+<div class="noise-overlay"></div>
+<div class="scan-line"></div>
+
+<!-- ═══════════════════════════════════════════════════
+     HEADER
+═══════════════════════════════════════════════════ -->
+<header class="header">
+  <div class="header-logo">
+    <div class="logo-mark">
+      <!-- Brain icon -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9.5 2a2.5 2.5 0 0 1 2.45 2h.1A2.5 2.5 0 0 1 14.5 2c1.76 0 3 1.5 3 3.5 0 .77-.19 1.5-.5 2.1A4 4 0 0 1 20 11.5a4 4 0 0 1-2.5 3.7c.32.67.5 1.4.5 2.3a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4c0-.9.18-1.63.5-2.3A4 4 0 0 1 4 11.5a4 4 0 0 1 3-3.9C6.69 7 6.5 6.27 6.5 5.5 6.5 3.5 7.74 2 9.5 2z"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-text">MemoryCare</div>
+      <div class="logo-sub">Cognitive Assistant · v3.0</div>
+    </div>
+  </div>
+
+  <div class="header-right">
+    <!-- Connection status -->
+    <div class="conn-pill connecting" id="conn-pill">
+      <div class="conn-dot"></div>
+      <span id="conn-label">Connecting…</span>
+    </div>
+
+    <!-- Theme switcher -->
+    <div class="theme-switcher" role="group" aria-label="Theme">
+      <button class="theme-btn active" data-theme="clinical" title="Clinical" aria-label="Clinical theme">⚕</button>
+      <button class="theme-btn" data-theme="glass" title="Vision Pro" aria-label="Glass theme">◈</button>
+      <button class="theme-btn" data-theme="minimal" title="Minimal" aria-label="Minimal theme">▣</button>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════
+     MAIN DASHBOARD
+═══════════════════════════════════════════════════ -->
+<main class="main-wrapper">
+  <div class="dashboard-grid">
+
+    <!-- ── VIDEO CARD ─────────────────────────────── -->
+    <div class="card video-card">
+      <div class="card-header">
+        <span class="card-title">Live Camera Feed</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="card-badge" id="resolution-badge">—</span>
+          <span class="card-badge" id="face-count-badge">0 faces</span>
+        </div>
+      </div>
+
+      <div class="video-wrapper">
+        <img id="video-feed" alt="Live camera feed" style="opacity:0"/>
+        <div class="video-gradient"></div>
+
+        <!-- Offline placeholder — shown before first frame -->
+        <div class="video-offline" id="video-offline">
+          <div class="offline-icon">
+            <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.069A1 1 0 0 1 21 8.82v6.36a1 1 0 0 1-1.447.89L15 14M3 8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8z"/></svg>
+          </div>
+          <p>Awaiting video stream…</p>
+        </div>
+      </div>
+
+      <div class="video-footer">
+        <div class="people-chips" id="people-chips">
+          <span class="chip">No faces detected</span>
+        </div>
+        <span class="fps-badge" id="fps-badge">— fps</span>
+      </div>
+    </div>
+
+    <!-- ── RIGHT COLUMN ───────────────────────────── -->
+    <div style="display:flex;flex-direction:column;gap:20px;">
+
+      <!-- TRANSCRIPT CARD -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Live Transcript</span>
+          <span class="card-badge" id="speaker-count-badge">0 speakers</span>
+        </div>
+        <div class="transcript-scroll" id="transcript-panel">
+          <div class="transcript-empty" id="transcript-empty">
+            <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11a7 7 0 0 1-7 7m0 0a7 7 0 0 1-7-7m7 7v4m0 0H8m4 0h4M9 7h1m5 0h1M9 11h6"/></svg>
+            <span>Listening for speech…</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ASSISTANT CUE CARD -->
+      <div class="card" id="cue-card">
+        <div class="card-header" id="cue-card-header">
+          <span class="card-title">Assistant Notifications</span>
+          <span class="card-badge" id="cue-count-badge">0</span>
+        </div>
+        <div class="cue-list" id="cue-list">
+          <div class="cue-empty" id="cue-empty">Cognitive cues will appear here.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── STATUS BAR ──────────────────────────────── -->
+  <div class="status-bar">
+    <div class="stat-item">
+      <span class="stat-label">Patient</span>
+      <span class="stat-value" id="stat-patient">Harry</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-label">Session</span>
+      <span class="stat-value" id="stat-session">—</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-label">Speakers</span>
+      <span class="stat-value" id="stat-speakers">0</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-label">Cues sent</span>
+      <span class="stat-value" id="stat-cues">0</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-label">WS latency</span>
+      <span class="stat-value" id="stat-latency">—</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-label">Uptime</span>
+      <span class="stat-value" id="stat-uptime">00:00</span>
+    </div>
+  </div>
+</main>
+
+<!-- ── Toast container ──────────────────────────── -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- ═══════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+/* ── Config ───────────────────────────────────────── */
+const WS_URL         = `ws://${location.host}/ws`;
+const RECONNECT_MS   = 3000;
+const PING_INTERVAL  = 10000;
+const MAX_CUE_ITEMS  = 50;
+
+/* ── Speaker colour map ───────────────────────────── */
+const SPEAKER_CLASSES = {
+  A:'spk-A', B:'spk-B', C:'spk-C', D:'spk-D',
+  E:'spk-E', F:'spk-F', G:'spk-G', H:'spk-H',
+};
+
+/* ── State ────────────────────────────────────────── */
+let ws             = null;
+let reconnectTimer = null;
+let pingTimer      = null;
+let sessionStart   = Date.now();
+let uptimeTimer    = null;
+let cueCount       = 0;
+let fpsFrameCount  = 0;
+let fpsLast        = performance.now();
+let lastTranscript = '';
+let speakerSet     = new Set();
+
+/* ── DOM refs ─────────────────────────────────────── */
+const $videoFeed       = document.getElementById('video-feed');
+const $videoOffline    = document.getElementById('video-offline');
+const $transcriptPanel = document.getElementById('transcript-panel');
+const $transcriptEmpty = document.getElementById('transcript-empty');
+const $cueList         = document.getElementById('cue-list');
+const $cueEmpty        = document.getElementById('cue-empty');
+const $cueCardHeader   = document.getElementById('cue-card-header');
+const $connPill        = document.getElementById('conn-pill');
+const $connLabel       = document.getElementById('conn-label');
+const $peopleChips     = document.getElementById('people-chips');
+const $fpsbadge        = document.getElementById('fps-badge');
+const $resolutionBadge = document.getElementById('resolution-badge');
+const $faceCountBadge  = document.getElementById('face-count-badge');
+const $speakerBadge    = document.getElementById('speaker-count-badge');
+const $cueCountBadge   = document.getElementById('cue-count-badge');
+const $statSpeakers    = document.getElementById('stat-speakers');
+const $statCues        = document.getElementById('stat-cues');
+const $statLatency     = document.getElementById('stat-latency');
+const $statUptime      = document.getElementById('stat-uptime');
+const $statSession     = document.getElementById('stat-session');
+const $toastContainer  = document.getElementById('toast-container');
+
+/* ════════════════════════════════════════════════════
+   WEBSOCKET  MANAGEMENT
+════════════════════════════════════════════════════ */
+function connect() {
+  setConnState('connecting');
+  ws = new WebSocket(WS_URL);
+
+  ws.onopen = () => {
+    setConnState('connected');
+    clearTimeout(reconnectTimer);
+    startPing();
+    showToast('Connected to Cognitive Engine', 'success');
+  };
+
+  ws.onmessage = (evt) => handleMessage(evt.data);
+
+  ws.onclose = () => {
+    setConnState('disconnected');
+    clearInterval(pingTimer);
+    reconnectTimer = setTimeout(connect, RECONNECT_MS);
+  };
+
+  ws.onerror = () => {
+    setConnState('disconnected');
+  };
+}
+
+function startPing() {
+  clearInterval(pingTimer);
+  pingTimer = setInterval(() => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      const t0 = performance.now();
+      ws.send(JSON.stringify({ cmd: 'ping' }));
+      // Latency is measured in pong handler below
+      window._pingTime = t0;
+    }
+  }, PING_INTERVAL);
+}
+
+function setConnState(state) {
+  $connPill.className = `conn-pill ${state}`;
+  $connLabel.textContent = {
+    connected: 'Live',
+    connecting: 'Connecting…',
+    disconnected: 'Reconnecting…',
+  }[state] ?? state;
+}
+
+/* ════════════════════════════════════════════════════
+   MESSAGE HANDLER
+════════════════════════════════════════════════════ */
+function handleMessage(raw) {
+  let msg;
+  try { msg = JSON.parse(raw); } catch { return; }
+
+  switch (msg.type) {
+
+    case 'video':
+      renderFrame(msg.data);
+      break;
+
+    case 'transcript':
+      renderTranscript(msg.data);
+      break;
+
+    case 'cue':
+      renderCue(msg.data, msg.timestamp);
+      break;
+
+    case 'status':
+      renderStatus(msg.people, msg.speakers);
+      break;
+
+    case 'pong':
+      if (window._pingTime) {
+        const latency = Math.round(performance.now() - window._pingTime);
+        $statLatency.textContent = `${latency} ms`;
+      }
+      break;
+  }
+}
+
+/* ════════════════════════════════════════════════════
+   VIDEO FRAME RENDERER
+════════════════════════════════════════════════════ */
+function renderFrame(b64) {
+  const src = `data:image/jpeg;base64,${b64}`;
+
+  if ($videoFeed.style.opacity === '0') {
+    $videoFeed.onload = () => {
+      $videoFeed.style.opacity = '1';
+      $videoOffline.style.display = 'none';
+      updateResolutionBadge();
+    };
+  }
+
+  $videoFeed.src = src;
+
+  // FPS counter
+  fpsFrameCount++;
+  const now = performance.now();
+  const elapsed = now - fpsLast;
+  if (elapsed >= 1000) {
+    const fps = Math.round(fpsFrameCount * 1000 / elapsed);
+    $fpsbage && ($fpsbage = $fpsbadge); // alias guard
+    document.getElementById('fps-badge').textContent = `${fps} fps`;
+    fpsFrameCount = 0;
+    fpsLast = now;
+  }
+}
+
+function updateResolutionBadge() {
+  const w = $videoFeed.naturalWidth;
+  const h = $videoFeed.naturalHeight;
+  if (w && h) $resolutionBadge.textContent = `${w}×${h}`;
+}
+
+/* ════════════════════════════════════════════════════
+   TRANSCRIPT RENDERER
+   Parses diarised text and builds speaker-turn blocks
+════════════════════════════════════════════════════ */
+function renderTranscript(raw) {
+  if (!raw || raw.trim() === lastTranscript.trim()) return;
+  lastTranscript = raw.trim();
+
+  // Split on [Speaker X]: boundaries
+  const turnRE = /\[Speaker ([A-Z][A-Z0-9]*)\]:\s*/g;
+  const parts  = raw.split(turnRE);
+  // parts = [leading?, labelA, textA, labelB, textB, ...]
+
+  // Clear existing turns, keep empty placeholder
+  while ($transcriptPanel.lastChild && $transcriptPanel.lastChild !== $transcriptEmpty) {
+    $transcriptPanel.removeChild($transcriptPanel.lastChild);
+  }
+
+  // If no speaker tags — render as plain text under generic label
+  if (parts.length <= 1) {
+    if (raw.trim()) {
+      $transcriptEmpty.style.display = 'none';
+      appendTurn('—', raw.trim());
+    } else {
+      $transcriptEmpty.style.display = 'flex';
+    }
+    return;
+  }
+
+  $transcriptEmpty.style.display = 'none';
+
+  // Build turn blocks from interleaved [label, text] pairs
+  for (let i = 1; i < parts.length - 1; i += 2) {
+    const label = parts[i];
+    const text  = (parts[i + 1] || '').trim();
+    if (!text) continue;
+    speakerSet.add(label);
+    appendTurn(label, text, i === parts.length - 2); // last = show cursor
+  }
+
+  updateSpeakerBadge();
+
+  // Auto-scroll to bottom
+  $transcriptPanel.scrollTop = $transcriptPanel.scrollHeight;
+}
+
+function appendTurn(label, text, isLast = false) {
+  const colClass = SPEAKER_CLASSES[label] || 'spk-default';
+  const ts       = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+  const turn = document.createElement('div');
+  turn.className = 'turn';
+  turn.innerHTML = `
+    <div class="turn-header">
+      <span class="speaker-badge ${colClass}">Spk ${label}</span>
+      <span class="turn-ts">${ts}</span>
+    </div>
+    <div class="turn-text">${escapeHTML(text)}${isLast ? '<span class="typing-cursor"></span>' : ''}</div>
+  `;
+  $transcriptPanel.appendChild(turn);
+}
+
+function updateSpeakerBadge() {
+  const n = speakerSet.size;
+  $speakerBadge.textContent = `${n} speaker${n !== 1 ? 's' : ''}`;
+  $statSpeakers.textContent = n;
+}
+
+/* ════════════════════════════════════════════════════
+   CUE / NOTIFICATION RENDERER
+════════════════════════════════════════════════════ */
+function renderCue(text, timestamp) {
+  if (!text) return;
+  cueCount++;
+
+  $cueEmpty.style.display = 'none';
+  $cueCountBadge.textContent = cueCount;
+  $statCues.textContent = cueCount;
+
+  // Flash header
+  $cueCardHeader.classList.remove('cue-flash');
+  void $cueCardHeader.offsetWidth; // reflow to restart animation
+  $cueCardHeader.classList.add('cue-flash');
+
+  const item = document.createElement('div');
+  item.className = 'cue-item';
+  item.innerHTML = `
+    <div class="cue-icon">
+      <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/>
+        <path d="M12 8v4l3 3"/>
+      </svg>
+    </div>
+    <div class="cue-body">
+      <div class="cue-text">${escapeHTML(text)}</div>
+      <div class="cue-meta">${timestamp ?? new Date().toLocaleTimeString()}</div>
+    </div>
+  `;
+
+  // Prepend (newest on top)
+  $cueList.insertBefore(item, $cueList.firstChild);
+
+  // Trim old cues
+  const items = $cueList.querySelectorAll('.cue-item');
+  if (items.length > MAX_CUE_ITEMS) items[items.length - 1].remove();
+
+  // Also show a toast notification
+  showToast(`💬 ${text.slice(0, 80)}${text.length > 80 ? '…' : ''}`, 'cue');
+}
+
+/* ════════════════════════════════════════════════════
+   STATUS / PEOPLE RENDERER
+════════════════════════════════════════════════════ */
+function renderStatus(people, speakerCount) {
+  // People chips
+  $peopleChips.innerHTML = '';
+  if (!people || people.length === 0) {
+    $peopleChips.innerHTML = '<span class="chip">No faces detected</span>';
+    $faceCountBadge.textContent = '0 faces';
+    return;
+  }
+
+  $faceCountBadge.textContent = `${people.length} face${people.length !== 1 ? 's' : ''}`;
+
+  people.forEach(name => {
+    const isKnown   = name && !name.startsWith('Unknown_');
+    const chipClass = isKnown ? 'chip known' : 'chip unknown';
+    const chip = document.createElement('span');
+    chip.className = chipClass;
+    chip.innerHTML = `<span class="chip-dot"></span>${escapeHTML(name || '?')}`;
+    $peopleChips.appendChild(chip);
+  });
+
+  $statSpeakers.textContent = speakerCount ?? 0;
+}
+
+/* ════════════════════════════════════════════════════
+   TOAST
+════════════════════════════════════════════════════ */
+function showToast(message, type = 'info') {
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.style.borderLeft = `3px solid var(--${type === 'success' ? 'success' : type === 'cue' ? 'accent' : 'text-muted'})`;
+  toast.textContent = message;
+  $toastContainer.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add('fade-out');
+    toast.addEventListener('animationend', () => toast.remove());
+  }, 4000);
+}
+
+/* ════════════════════════════════════════════════════
+   THEME SWITCHER
+════════════════════════════════════════════════════ */
+document.querySelectorAll('.theme-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const theme = btn.dataset.theme;
+    document.documentElement.setAttribute('data-theme', theme);
+
+    document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Persist preference
+    try { localStorage.setItem('mc-theme', theme); } catch {}
+  });
+});
+
+// Restore saved theme
+try {
+  const saved = localStorage.getItem('mc-theme');
+  if (saved) {
+    document.documentElement.setAttribute('data-theme', saved);
+    document.querySelectorAll('.theme-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.theme === saved);
+    });
+  }
+} catch {}
+
+/* ════════════════════════════════════════════════════
+   UPTIME & SESSION TIMER
+════════════════════════════════════════════════════ */
+function formatDuration(ms) {
+  const s = Math.floor(ms / 1000);
+  const m = Math.floor(s / 60);
+  const h = Math.floor(m / 60);
+  return h > 0
+    ? `${String(h).padStart(2,'0')}:${String(m%60).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`
+    : `${String(m).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+}
+
+uptimeTimer = setInterval(() => {
+  $statUptime.textContent = formatDuration(Date.now() - sessionStart);
+  $statSession.textContent = new Date().toLocaleTimeString();
+}, 1000);
+
+/* ════════════════════════════════════════════════════
+   UTILITY
+════════════════════════════════════════════════════ */
+function escapeHTML(str) {
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+/* ════════════════════════════════════════════════════
+   BOOT
+════════════════════════════════════════════════════ */
+connect();
+</script>
+</body>
+</html>

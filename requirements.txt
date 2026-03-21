@@ -11,3 +11,7 @@ SpeechRecognition
 pyaudio
 neo4j
 python-dotenv
+resemblyzer 
+soundfile 
+pyttsx3
+fastapi
