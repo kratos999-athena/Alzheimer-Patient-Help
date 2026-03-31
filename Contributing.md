@@ -47,8 +47,8 @@ Open an issue with the label `enhancement` and describe:
 ## Development Setup
 
 ```bash
-git clone https://github.com/kratos999-athena/Scan2Sheet.git
-cd Scan2Sheet
+git clone https://github.com/kratos999-athena/Alzheimer-Patient-Help.git
+cd Alzheimer-Patient-Help
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 pip install pytest
@@ -75,20 +75,6 @@ pytest tests/ -v
 
 ---
 
-## Commit Message Convention
-
-Use [Conventional Commits](https://www.conventionalcommits.org/):
-
-```
-feat: add PDF multi-page input support
-fix: correct cell padding in crop_each_bounding_box_and_ocr
-docs: update README installation steps
-refactor: split preprocessing.py into orientation and skew modules
-test: add unit tests for LineExtractor
-chore: update requirements.txt versions
-```
-
----
 
 ## Code Style
 
